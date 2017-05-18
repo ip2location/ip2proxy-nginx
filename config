@@ -1,0 +1,16 @@
+ngx_addon_name=ngx_http_ip2proxy_module
+
+if test -n "$ngx_module_link"; then
+  ngx_module_type=HTTP
+  ngx_module_name=ngx_http_ip2proxy_module
+  ngx_module_srcs="$ngx_addon_dir/ngx_http_ip2proxy.c"
+  ngx_module_libs="-lIP2Proxy"
+
+  . auto/module
+else
+  HTTP_MODULES="$HTTP_MODULES ngx_http_ip2proxy_module"
+  NGX_ADDON_SRCS="$NGX_ADDON_SRCS $ngx_addon_dir/ngx_http_ip2proxy.c"
+
+  CORE_LIBS="$CORE_LIBS -lIP2Proxy"
+  CORE_INCS="$CORE_INCS"
+fi
