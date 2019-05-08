@@ -332,7 +332,7 @@ static ngx_http_ip2proxy_ctx_t *
 		ngx_pool_cleanup_t *cln;
 		ngx_http_ip2proxy_conf_t *cfg;
 		ngx_array_t *xfwd;
-		char *ip_addr;
+		u_char ip_addr[NGX_INET6_ADDRSTRLEN + 1];
 
 		ctx = ngx_http_get_module_ctx(r, ngx_http_ip2proxy_module);
 
@@ -353,13 +353,17 @@ static ngx_http_ip2proxy_ctx_t *
 		xfwd = &r->headers_in.x_forwarded_for;
 
 		if (xfwd->nelts > 0 && cfg->reverse_proxy) {
-            ngx_table_elt_t **p = xfwd->elts;
-			ip_addr = (char *)p[0]->value.data;
+			ngx_table_elt_t **p = xfwd->elts;
+			ngx_str_t addr = p[0]->value;
+			(void) ngx_copy((void *)ip_addr, addr.data, addr.len);
+			ip_addr[addr.len] = '\0';
 		} else {
-			ip_addr = (char *)r->connection->addr_text.data;
+			ngx_str_t addr = r->connection->addr_text;
+			(void) ngx_copy((void *)ip_addr, addr.data, addr.len);
+			ip_addr[addr.len] = '\0';
 		}
 
-		ctx->record = IP2Proxy_get_all(cfg->database, ip_addr);
+		ctx->record = IP2Proxy_get_all(cfg->database, (char *)ip_addr);
 
 		if (ctx->record == NULL) {
 			ctx->not_found = 1;
