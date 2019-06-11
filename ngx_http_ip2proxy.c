@@ -175,7 +175,7 @@ static ngx_http_variable_t
 			0,
 			0
 		}, {
-			ngx_string("ip2proxy_domain),
+			ngx_string("ip2proxy_domain"),
 			NULL,
 			ngx_http_ip2proxy_get_str_value,
 			offsetof(IP2ProxyRecord, domain),
