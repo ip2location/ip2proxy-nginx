@@ -175,6 +175,41 @@ static ngx_http_variable_t
 			0,
 			0
 		}, {
+			ngx_string("ip2proxy_domain),
+			NULL,
+			ngx_http_ip2proxy_get_str_value,
+			offsetof(IP2ProxyRecord, domain),
+			0,
+			0
+		}, {
+			ngx_string("ip2proxy_usage_type"),
+			NULL,
+			ngx_http_ip2proxy_get_str_value,
+			offsetof(IP2ProxyRecord, usage_type),
+			0,
+			0
+		}, {
+			ngx_string("ip2proxy_asn"),
+			NULL,
+			ngx_http_ip2proxy_get_str_value,
+			offsetof(IP2ProxyRecord, asn),
+			0,
+			0
+		}, {
+			ngx_string("ip2proxy_as"),
+			NULL,
+			ngx_http_ip2proxy_get_str_value,
+			offsetof(IP2ProxyRecord, as_),
+			0,
+			0
+		}, {
+			ngx_string("ip2proxy_last_seen"),
+			NULL,
+			ngx_http_ip2proxy_get_str_value,
+			offsetof(IP2ProxyRecord, last_seen),
+			0,
+			0
+		}, {
 			ngx_null_string,
 			NULL,
 			NULL,

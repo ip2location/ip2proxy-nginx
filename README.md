@@ -2,7 +2,7 @@
 
 The module detects visitor IP addresses which are used as VPN anonymizer, open proxies, web proxies and Tor exits.
 
-A IP2Proxy database is required for the lookup. It can be downloaded from http://lite.ip2location.com (Free) or http://www.ip2location.com (Commercial).
+A IP2Proxy database is required for the lookup. It can be downloaded from https://lite.ip2location.com (Free) or https://www.ip2location.com (Commercial).
 
 
 
@@ -14,7 +14,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
    apt-get install -y wget git build-essential zlib1g-dev libpcre3 libpcre3-dev libtool autoconf automake
    ```
 
-   ​
+   
 
 2. Create a working directory.
 
@@ -23,7 +23,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
    cd ~/ip2proxy-dev
    ```
 
-   ​
+   
 
 3. Download IP2Proxy C library source code.
 
@@ -31,7 +31,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
    git clone https://github.com/ip2location/ip2proxy-c.git
    ```
 
-   ​
+   
 
 4. Compile and install the IP2Proxy C library.
 
@@ -43,7 +43,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
    make install
    ```
 
-   ​
+   
 
 5. Refresh local library.
 
@@ -51,7 +51,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
    ldconfig
    ```
 
-   ​
+   
 
 6. Download IP2Proxy Nginx.
 
@@ -60,7 +60,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
    git clone https://github.com/ip2location/ip2proxy-nginx
    ```
 
-   ​
+   
 
 7. Download the latest Nginx source.
 
@@ -70,7 +70,7 @@ A IP2Proxy database is required for the lookup. It can be downloaded from http:/
 
    **Notes:** Please check the `VERSION` number from http://nginx.org/en/download.html
 
-   ​
+   
 
 8. Compile and install Nginx with IP2Proxy module.
 
@@ -139,6 +139,11 @@ http {
         add_header IP2Proxy-ISP $ip2proxy_isp;
         add_header IP2Proxy-Is-Proxy $ip2proxy_is_proxy;
         add_header IP2Proxy-Proxy-Type $ip2proxy_proxy_type;
+        add_header IP2Proxy-Domain $ip2proxy_domain;
+        add_header IP2Proxy-Usage-Type $ip2proxy_usage_type;
+        add_header IP2Proxy-ASN $ip2proxy_proxy_asn;
+        add_header IP2Proxy-AS $ip2proxy_proxy_as;
+        add_header IP2Proxy-Last-Seen $ip2proxy_last_seen;
 
         ...
 }
