@@ -32,6 +32,17 @@ static void *
 static char *
 	ngx_http_ip2proxy_init_main_conf(ngx_conf_t *cf, void *conf);
 
+typedef struct {
+    ngx_cycle_t                      *cycle;
+    ngx_http_ip2proxy_conf_t *main_cf;
+} ngx_http_ip2proxy_clean_ctx_t;
+
+static ngx_int_t
+ngx_http_ip2proxy_init_process(ngx_cycle_t *cycle);
+
+static void
+ngx_http_ip2proxy_exit_process(ngx_cycle_t *cycle);
+
 static void *
 	ngx_http_ip2proxy_create_loc_conf(ngx_conf_t *cf);
 
@@ -116,10 +127,10 @@ ngx_module_t
 		NGX_HTTP_MODULE,
 		NULL,
 		NULL,
+		ngx_http_ip2proxy_init_process,
 		NULL,
 		NULL,
-		NULL,
-		NULL,
+		ngx_http_ip2proxy_exit_process,
 		NULL,
 		NGX_MODULE_V1_PADDING
 	};
@@ -219,6 +230,75 @@ static ngx_http_variable_t
 		}
 	};
 
+
+static ngx_int_t ngx_http_ip2proxy_init_process(ngx_cycle_t *cycle)
+{
+	ngx_http_ip2proxy_conf_t  *cfg;
+
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+		"ip2proxy init process");
+
+	cfg = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_ip2proxy_module);
+
+	/* Open the database if it is not already open. */
+	if ((cfg->enabled) && (cfg->database == NULL)) {
+		if (cfg->file_name.len == 0) {
+			return NGX_OK;
+		}
+
+		cfg->database = IP2Proxy_open((char *)cfg->file_name.data);
+
+		if (cfg->database == NULL) {
+			ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+				"can not open database file \"%V\" in %s:%ui",
+				&cfg->file_name, cfg->database_file, cfg->database_line);
+
+			return NGX_OK;
+		}
+
+		if (IP2Proxy_open_mem(cfg->database, cfg->access_type) < 0) {
+			/* Close will delete the allocated database instance. */
+			IP2Proxy_close(cfg->database);
+			cfg->database = NULL;
+
+			ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+				"can not load database file %V using \"%V\" access type in %s:%ui",
+				&cfg->file_name, &cfg->access_type_name, cfg->database_file,
+				cfg->database_line);
+
+			return NGX_OK;
+		} else {
+			ngx_log_debug1(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+				"ip2proxy opened database %V",
+				&cfg->file_name);
+		}
+	}
+
+	return NGX_OK;
+}
+
+
+static void ngx_http_ip2proxy_exit_process(ngx_cycle_t *cycle)
+{
+	ngx_http_ip2proxy_conf_t  *cfg;
+
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, cycle->log, 0,
+		"ip2proxy exit process");
+
+	cfg = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_ip2proxy_module);
+
+	if (cfg->database != NULL) {
+		IP2Proxy_close(cfg->database);
+
+		if (cfg->access_type == IP2PROXY_SHARED_MEMORY) {
+			IP2Proxy_DB_del_shm();
+		}
+
+		cfg->database = NULL;
+	}
+}
+
+
 static void *
 	ngx_http_ip2proxy_create_main_conf(ngx_conf_t *cf) {
 		ngx_http_ip2proxy_conf_t  *cfg;
@@ -236,15 +316,30 @@ static void *
 	}
 
 void ngx_http_ip2proxy_cleanup(void *data) {
-	IP2Proxy *loc = data;
-	IP2Proxy_close(loc);
-	IP2Proxy_DB_del_shm();
+	ngx_http_ip2proxy_clean_ctx_t *clean_ctx = data;
+
+	ngx_log_debug0(NGX_LOG_DEBUG_HTTP, clean_ctx->cycle->log, 0,
+		"ip2proxy cleanup");
+
+	if (clean_ctx->main_cf->database != NULL) {
+		IP2Proxy_close(clean_ctx->main_cf->database);
+
+		if (clean_ctx->main_cf->access_type == IP2PROXY_SHARED_MEMORY) {
+			IP2Proxy_DB_del_shm();
+		}
+
+		ngx_log_debug0(NGX_LOG_DEBUG_HTTP, clean_ctx->cycle->log, 0,
+		"ip2proxy cleanup database closed");
+
+		clean_ctx->main_cf->database = NULL;
+	}
 }
 
 static char *
 	ngx_http_ip2proxy_init_main_conf(ngx_conf_t *cf, void *data) {
 		ngx_http_ip2proxy_conf_t *cfg = data;
 		ngx_pool_cleanup_t *cln;
+		ngx_http_ip2proxy_clean_ctx_t  *clean_ctx;
 
 		if (cfg->access_type == NGX_CONF_UNSET) {
 			cfg->access_type = IP2PROXY_SHARED_MEMORY;
@@ -257,27 +352,20 @@ static char *
 				return NGX_CONF_ERROR;
 			}
 
-			cfg->database = IP2Proxy_open((char *)cfg->file_name.data);
-
-			if (cfg->database == NULL) {
-				ngx_log_error(NGX_LOG_EMERG, cf->log, 0, "Unable to open database file \"%V\" in %s:%ui", &cfg->file_name, cfg->database_file, cfg->database_line);
-
-				return NGX_CONF_ERROR;
-			}
-
-			if (IP2Proxy_open_mem(cfg->database, cfg->access_type) == -1) {
-				IP2Proxy_close(cfg->database);
-				ngx_log_error(NGX_LOG_EMERG, cf->log, 0, "Unable to load %V using \"%V\" access type in %s:%ui", &cfg->file_name, &cfg->access_type_name, cfg->database_file, cfg->database_line);
-
-				return NGX_CONF_ERROR;
-			}
-
 			cln = ngx_pool_cleanup_add(cf->pool, 0);
 			if (cln == NULL) {
 				return NGX_CONF_ERROR;
 			}
-			
-			cln->data = cfg->database;
+
+			clean_ctx = ngx_pcalloc(cf->cycle->pool, sizeof(ngx_http_ip2proxy_clean_ctx_t));
+			if (clean_ctx == NULL) {
+				return NGX_CONF_ERROR;
+			}
+
+			clean_ctx->cycle = cf->cycle;
+			clean_ctx->main_cf = cfg;
+
+			cln->data = clean_ctx;
 			cln->handler = ngx_http_ip2proxy_cleanup;
 		}
 		return NGX_CONF_OK;
