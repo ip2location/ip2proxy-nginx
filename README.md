@@ -127,7 +127,7 @@ http {
         ...
 
         ip2proxy on;
-        ip2proxy_database /ip2proxy/databases/DB4.BIN;
+        ip2proxy_database /ip2proxy/databases/PX10.BIN;
         ip2proxy_access_type shared_memory;
         ip2proxy_reverse_proxy on;
         
@@ -144,7 +144,8 @@ http {
         add_header IP2Proxy-ASN $ip2proxy_proxy_asn;
         add_header IP2Proxy-AS $ip2proxy_proxy_as;
         add_header IP2Proxy-Last-Seen $ip2proxy_last_seen;
-
+        add_header IP2Proxy-Threat $ip2proxy_threat;
+        
         ...
 }
 
