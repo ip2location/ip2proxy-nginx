@@ -220,7 +220,7 @@ static ngx_http_variable_t
 			offsetof(IP2ProxyRecord, last_seen),
 			0,
 			0
-		} {
+		}, {
 			ngx_string("ip2proxy_threat"),
 			NULL,
 			ngx_http_ip2proxy_get_str_value,
