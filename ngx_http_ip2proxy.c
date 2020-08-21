@@ -544,7 +544,7 @@ static ngx_int_t
 
 		v->data = *(u_char **) ((char *) ctx->record + data);
 
-		if (ngx_strcmp(v->data, NOT_SUPPORTED) == 0 || ngx_strcmp(v->data, INVALID_IPV4_ADDRESS) == 0) {
+		if (ngx_strcmp(v->data, NOT_SUPPORTED) == 0 || ngx_strcmp(v->data, INVALID_IP_ADDRESS) == 0) {
 			v->not_found = 1;
 			return NGX_OK;
 		}
