@@ -1,153 +1,214 @@
-# IP2Proxy HTTP Module for Nginx
+# Nginx IP2Proxy module
 
-The module detects visitor IP addresses which are used as VPN anonymizer, open proxies, web proxies and Tor exits.
 
-A IP2Proxy database is required for the lookup. It can be downloaded from https://lite.ip2location.com (Free) or https://www.ip2location.com (Commercial).
+
+### Description
+
+The Nginx IP2Proxy module enables user to detect visitor IP addresses which are used as VPN anonymizer, open proxies, web proxies and Tor exits.
+
+The IP2Proxy database can be downloaded from [https://lite.ip2location.com](https://lite.ip2location.com/ip2proxy-lite) (Free) or [https://www.ip2location.com](https://www.ip2location.com/database/ip2proxy) (Commercial).
 
 
 
 ### Installation
 
-1. Install required packages for development.
+1. Download IP2Proxy C library from https://github.com/ip2location/ip2proxy-c.
 
-   ```
-   apt-get install -y wget git build-essential zlib1g-dev libpcre3 libpcre3-dev libtool autoconf automake
-   ```
+2. Compile and install IP2Proxy C library.
 
-   
+3. Download IP2Proxy module and decompress the package.
 
-2. Create a working directory.
-
-   ```
-   mkdir ~/ip2proxy-dev
-   cd ~/ip2proxy-dev
+   ```bash
+   wget https://github.com/ip2location/ip2proxy-nginx/archive/master.zip
+   unzip master.zip
+   rm master.zip
    ```
 
    
 
-3. Download IP2Proxy C library source code.
+4. Download the latest Nginx source code from https://nginx.org/en/download.html
 
-   ```
-   git clone https://github.com/ip2location/ip2proxy-c.git
+   ```bash
+   wget https://nginx.org/download/nginx-x.y.z.tar.gz
    ```
 
    
 
-4. Compile and install the IP2Proxy C library.
+5. Decompress and go into Nginx source directory.
 
+   ```bash
+   tar xvfz nginx-x.y.z.tar.gz
+   cd nginx-x.y.z
    ```
-   cd ip2proxy-c
-   autoreconf -i -v --force
-   ./configure
+
+   
+
+6. Re-compile Nginx from source to include this module.
+
+   **Static Module**
+
+   ```bash
+   ./configure --add-module=/absolute/path/to/nginx-ip2proxy-master
    make
    make install
    ```
 
-   
+   **Dynamic Module**
 
-5. Refresh local library.
-
-   ```
-   ldconfig
-   ```
-
-   
-
-6. Download IP2Proxy Nginx.
-
-   ```
-   cd ~/ip2proxy-dev
-   git clone https://github.com/ip2location/ip2proxy-nginx
-   ```
-
-   
-
-7. Download the latest Nginx source.
-
-   ```
-   wget http://nginx.org/download/nginx-VERSION.tar.gz
-   ```
-
-   **Notes:** Please check the `VERSION` number from http://nginx.org/en/download.html
-
-   
-
-8. Compile and install Nginx with IP2Proxy module.
-
-   ```
-   tar -xvzf nginx-VERSION.tar.gz 
-   cd nginx-VERSION
-   ./configure --sbin-path=/usr/sbin/nginx --conf-path=/etc/nginx/nginx.conf --pid-path=/run/nginx.pid --add-module=~/ip2proxy-dev/ip2proxy-nginx
+   ```bash
+   ./configure --add-dynamic-module=/absolute/path/to/nginx-ip2proxy-master
    make
    make install
    ```
 
 
 
-### Configuration
+### Nginx Configuration
+
+Insert the configuration below to your `nginx.conf`.
 
 ```
-Syntax      : ip2proxy
-Value       : on | off
-Default     : off
-Context     : http, server, location
-Description : Enable of disable IP2Proxy module.
+Syntax      : load_module modules/ngx_http_ip2proxy_module.so;
+Default     : -
+Context     : main
+Description : Load IP2Proxy Nginx module if it was compiled as dynamic.
 ```
 
 ```
-Syntax      : ip2proxy_database
-Value       : [Absolute path to IP2Proxy database]
+Syntax      : ip2proxy_access_type file_io|shared_memory|cache_memory
+Default     : cache_memory
+Context     : http
+Description : Set the method used for lookup.
+```
+
+```
+Syntax      : ip2proxy_database path
 Default     : none
-Context     : http, server, location
-Description : The absolute path to IP2Proxy BIN database file.
+Context     : http
+Description : The absolute path to IP2Proxy BIN database.
 ```
 
 ```
-Syntax      : ip2proxy_access_type
-Value       : file_io | shared_memory | cache_memory
-Default     : file_io
-Context     : http, server, location
-Description : Define the lookup mode for best performance practice.
-```
-
-```
-Syntax      : ip2proxy_reverse_proxy
-Value       : on | off
+Syntax      : ip2proxy_proxy_recursive on|off
 Default     : off
-Context     : http, server, location
-Description : Detect X-Forwareded-For header for actual visitor IP if Nginx is behind a reverse proxy.
+Context     : http
+Description : Enable recursive search in the x-forwarded-for headers.
+```
+
+```
+Syntax      : ip2proxy_proxy cidr|address
+Default     : none
+Context     : http
+Description : Set a list of proxies to translate x-forwarded-for headers for.
 ```
 
 
 
-### Example of nginx.conf
+**Example:**
 
-```
+```nginx
 http {
-        ...
-
-        ip2proxy on;
-        ip2proxy_database /ip2proxy/databases/PX10.BIN;
-        ip2proxy_access_type shared_memory;
-        ip2proxy_reverse_proxy on;
-        
-        # Add custom headers so the values are accessible from PHP
-        add_header IP2Proxy-Country-Code $ip2proxy_country_short;
-        add_header IP2Proxy-Country-Name $ip2proxy_country_long;
-        add_header IP2Proxy-Region $ip2proxy_region;
-        add_header IP2Proxy-City $ip2proxy_city;
-        add_header IP2Proxy-ISP $ip2proxy_isp;
-        add_header IP2Proxy-Is-Proxy $ip2proxy_is_proxy;
-        add_header IP2Proxy-Proxy-Type $ip2proxy_proxy_type;
-        add_header IP2Proxy-Domain $ip2proxy_domain;
-        add_header IP2Proxy-Usage-Type $ip2proxy_usage_type;
-        add_header IP2Proxy-ASN $ip2proxy_proxy_asn;
-        add_header IP2Proxy-AS $ip2proxy_proxy_as;
-        add_header IP2Proxy-Last-Seen $ip2proxy_last_seen;
-        add_header IP2Proxy-Threat $ip2proxy_threat;
-        
-        ...
+	...
+	
+	ip2proxy_access_type		cache_memory;
+	ip2proxy_database			/usr/share/ip2location/PX3.BIN;
+	ip2proxy_proxy_recursive	on;
+	ip2proxy_proxy				192.168.1.0/24;
 }
-
 ```
 
+
+
+### Variables
+
+The following variables will be made available in Nginx:
+
+```nginx
+$ip2proxy_country_short;
+$ip2proxy_country_long;
+$ip2proxy_region;
+$ip2proxy_city;
+$ip2proxy_isp;
+$ip2proxy_is_proxy;
+$ip2proxy_proxy_type;
+$ip2proxy_domain;
+$ip2proxy_usage_type;
+$ip2proxy_proxy_asn;
+$ip2proxy_proxy_as;
+$ip2proxy_last_seen;
+$ip2proxy_threat;
+```
+
+
+
+### Usage Example
+
+##### Add Server Variables
+
+```nginx
+server {
+	listen 80 default_server;
+	root /var/www;
+	index index.html index.php;
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+	server_name _;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location ~ \.php$ {
+		fastcgi_pass php-fpm-sock;
+		fastcgi_index index.php;
+		include fastcgi.conf;
+
+		fastcgi_param IP2PROXY_COUNTRY_SHORT       $ip2proxy_country_short;
+		fastcgi_param IP2PROXY_COUNTRY_LONG        $ip2proxy_country_long;
+        fastcgi_param IP2PROXY_REGION              $ip2proxyn_region;
+        fastcgi_param IP2PROXY_CITY                $ip2proxy_city;
+        fastcgi_param IP2PROXY_ISP                 $ip2proxy_isp;
+        fastcgi_param IP2PROXY_IS_PROXY            $ip2proxy_is_proxy;
+        fastcgi_param IP2PROXY_PROXY_TYPE          $ip2proxy_proxy_type;
+	}
+}
+```
+
+
+
+##### Block Proxy IP
+
+```nginx
+if ( $ip2proxy_is_proxy = '1' ) {
+    return 444;
+}
+```
+
+
+
+##### Block Spammers
+
+```nginx
+if ( $ip2proxy_threat = 'SPAM' ) {
+    return 444;
+}
+```
+
+
+
+### IPv4 BIN vs IPv6 BIN
+
+Use the IPv4 BIN file if you just need to query IPv4 addresses.
+
+If you query an IPv6 address using the IPv4 BIN, you'll see the INVALID_IP_ADDRESS error.
+
+Use the IPv6 BIN file if you need to query BOTH IPv4 and IPv6 addresses.
+
+
+
+### Support
+Please visit us at https://www.ip2location.com for services and databases we offer.
+
+For support, please email us at support@ip2location.com
