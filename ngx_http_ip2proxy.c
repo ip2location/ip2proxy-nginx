@@ -300,7 +300,6 @@ ngx_http_ip2proxy_create_conf(ngx_conf_t *cf)
 	}
 
 	conf->proxy_recursive = NGX_CONF_UNSET;
-	conf->access_type = NGX_CONF_UNSET;
 
 	cln = ngx_pool_cleanup_add(cf->pool, 0);
 	if (cln == NULL) {
@@ -320,7 +319,6 @@ ngx_http_ip2proxy_init_conf(ngx_conf_t *cf, void *conf)
 	ngx_http_ip2proxy_conf_t	*gcf = conf;
 
 	ngx_conf_init_value(gcf->proxy_recursive, 0);
-	ngx_conf_init_value(gcf->access_type, IP2PROXY_CACHE_MEMORY);
 
 	return NGX_CONF_OK;
 }
@@ -347,7 +345,7 @@ ngx_http_ip2proxy_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	gcf->handler = IP2Proxy_open((char *) value[1].data);
 
 	if (gcf->handler == NULL) {
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unable to open database file \"%V\".", &value[1]);
+		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unable to open database file \"%s\".", &value[1].data);
 		return NGX_CONF_ERROR;
 	}
 
