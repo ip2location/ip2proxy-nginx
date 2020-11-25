@@ -74,7 +74,7 @@ static ngx_command_t ngx_http_ip2proxy_commands[] = {
 static ngx_http_module_t ngx_http_ip2proxy_module_ctx = {
 	ngx_http_ip2proxy_add_variables,	/* preconfiguration */
 	NULL,								/* postconfiguration */
-	ngx_http_ip2proxy_create_conf,	/* create main configuration */
+	ngx_http_ip2proxy_create_conf,		/* create main configuration */
 	ngx_http_ip2proxy_init_conf,		/* init main configuration */
 	NULL,								/* create server configuration */
 	NULL,								/* merge server configuration */
@@ -87,14 +87,14 @@ ngx_module_t ngx_http_ip2proxy_module = {
 	NGX_MODULE_V1,
 	&ngx_http_ip2proxy_module_ctx,	/* module context */
 	ngx_http_ip2proxy_commands,		/* module directives */
-	NGX_HTTP_MODULE,					/* module type */
-	NULL,								/* init master */
-	NULL,								/* init module */
-	NULL,								/* init process */
-	NULL,								/* init thread */
-	NULL,								/* exit thread */
-	NULL,								/* exit process */
-	NULL,								/* exit master */
+	NGX_HTTP_MODULE,				/* module type */
+	NULL,							/* init master */
+	NULL,							/* init module */
+	NULL,							/* init process */
+	NULL,							/* init thread */
+	NULL,							/* exit thread */
+	NULL,							/* exit process */
+	NULL,							/* exit master */
 	NGX_MODULE_V1_PADDING
 };
 
@@ -185,8 +185,8 @@ ngx_http_ip2proxy_vars[] = {
 static ngx_int_t
 ngx_http_ip2proxy_get_str_value(ngx_http_request_t *r, ngx_http_variable_value_t *v, uintptr_t data)
 {
-	char				*val;
-	size_t				len;
+	char			*val;
+	size_t			len;
 	IP2ProxyRecord	*record;
 
 	record = ngx_http_ip2proxy_get_records(r);
@@ -196,12 +196,14 @@ ngx_http_ip2proxy_get_str_value(ngx_http_request_t *r, ngx_http_variable_value_t
 	}
 
 	val = *(char **) ((char *) record + data);
+	
 	if (val == NULL) {
 		goto no_value;
 	}
 
 	len = ngx_strlen(val);
 	v->data = ngx_pnalloc(r->pool, len);
+	
 	if (v->data == NULL) {
 		IP2Proxy_free_record(record);
 		return NGX_ERROR;
@@ -236,12 +238,11 @@ ngx_http_ip2proxy_get_records(ngx_http_request_t *r)
 
 	gcf = ngx_http_get_module_main_conf(r, ngx_http_ip2proxy_module);
 
-	if (gcf->handler)
-	{
-		ngx_addr_t			addr;
-		ngx_array_t			*xfwd;
-		u_char				p[NGX_INET6_ADDRSTRLEN + 1];
-		size_t				size;
+	if (gcf->handler) {
+		ngx_addr_t	addr;
+		ngx_array_t	*xfwd;
+		u_char		p[NGX_INET6_ADDRSTRLEN + 1];
+		size_t		size;
 
 		addr.sockaddr = r->connection->sockaddr;
 		addr.socklen = r->connection->socklen;
@@ -276,6 +277,7 @@ ngx_http_ip2proxy_add_variables(ngx_conf_t *cf)
 
 	for (v = ngx_http_ip2proxy_vars; v->name.len; v++) {
 		var = ngx_http_add_variable(cf, &v->name, v->flags);
+		
 		if (var == NULL) {
 			return NGX_ERROR;
 		}
@@ -291,10 +293,11 @@ ngx_http_ip2proxy_add_variables(ngx_conf_t *cf)
 static void *
 ngx_http_ip2proxy_create_conf(ngx_conf_t *cf)
 {
-	ngx_pool_cleanup_t	 *cln;
+	ngx_pool_cleanup_t			*cln;
 	ngx_http_ip2proxy_conf_t	*conf;
 
 	conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_ip2proxy_conf_t));
+	
 	if (conf == NULL) {
 		return NULL;
 	}
@@ -302,6 +305,7 @@ ngx_http_ip2proxy_create_conf(ngx_conf_t *cf)
 	conf->proxy_recursive = NGX_CONF_UNSET;
 
 	cln = ngx_pool_cleanup_add(cf->pool, 0);
+	
 	if (cln == NULL) {
 		return NULL;
 	}
@@ -350,8 +354,6 @@ ngx_http_ip2proxy_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 	}
 
 	if (IP2Proxy_open_mem(gcf->handler, gcf->access_type) == -1) {
-		IP2Proxy_close(gcf->handler);
-		
 		ngx_log_error(NGX_LOG_EMERG, cf->log, 0, "Unable to load database using \"%V\" access type.", &gcf->access_type);
 		return NGX_CONF_ERROR;
 	}
