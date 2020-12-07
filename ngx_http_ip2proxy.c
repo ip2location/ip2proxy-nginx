@@ -13,7 +13,6 @@
 
 typedef struct {
 	IP2Proxy			*handler;
-	ngx_int_t			access_type;
 	ngx_array_t			*proxies;
 	ngx_flag_t			proxy_recursive;
 } ngx_http_ip2proxy_conf_t;
@@ -29,7 +28,6 @@ static IP2ProxyRecord *ngx_http_ip2proxy_get_records(ngx_http_request_t *r);
 static void *ngx_http_ip2proxy_create_conf(ngx_conf_t *cf);
 static char *ngx_http_ip2proxy_init_conf(ngx_conf_t *cf, void *conf);
 static char *ngx_http_ip2proxy_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
-static char *ngx_http_ip2proxy_access_type(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static char *ngx_http_ip2proxy_proxy(ngx_conf_t *cf, ngx_command_t *cmd, void *conf);
 static ngx_int_t ngx_http_ip2proxy_cidr_value(ngx_conf_t *cf, ngx_str_t *net, ngx_cidr_t *cidr);
 static void ngx_http_ip2proxy_cleanup(void *data);
@@ -39,14 +37,6 @@ static ngx_command_t ngx_http_ip2proxy_commands[] = {
 		ngx_string("ip2proxy_database"),
 		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE12,
 		ngx_http_ip2proxy_database,
-		NGX_HTTP_MAIN_CONF_OFFSET,
-		0,
-		NULL
-	},
-	{
-		ngx_string("ip2proxy_access_type"),
-		NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE12,
-		ngx_http_ip2proxy_access_type,
 		NGX_HTTP_MAIN_CONF_OFFSET,
 		0,
 		NULL
@@ -353,29 +343,7 @@ ngx_http_ip2proxy_database(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 		return NGX_CONF_ERROR;
 	}
 
-	IP2Proxy_open_mem(gcf->handler, gcf->access_type);
-
-	return NGX_CONF_OK;
-}
-
-static char *
-ngx_http_ip2proxy_access_type(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
-	ngx_http_ip2proxy_conf_t	*gcf = conf;
-	ngx_str_t					*value;
-
-	value = cf->args->elts;
-
-	if (ngx_strcasecmp((u_char *)"file_io", value[1].data) == 0) {
-		gcf->access_type = IP2PROXY_FILE_IO;
-	} else if (ngx_strcasecmp((u_char *)"cache_memory", value[1].data) == 0) {
-		gcf->access_type = IP2PROXY_CACHE_MEMORY;
-	} else if (ngx_strcasecmp((u_char *)"shared_memory", value[1].data) == 0) {
-		gcf->access_type = IP2PROXY_SHARED_MEMORY;
-	} else {
-		ngx_conf_log_error(NGX_LOG_EMERG, cf, 0, "Unkown access type \"%V\".", &value[1]);
-		return NGX_CONF_ERROR;
-	}
+	IP2Proxy_open_mem(gcf->handler, IP2PROXY_CACHE_MEMORY);
 
 	return NGX_CONF_OK;
 }
@@ -445,11 +413,6 @@ ngx_http_ip2proxy_cleanup(void *data)
 
 	if (gcf->handler) {
 		IP2Proxy_close(gcf->handler);
-
-		if (gcf->access_type == IP2PROXY_SHARED_MEMORY) {
-			IP2Proxy_DB_del_shm();
-		}
-
 		gcf->handler = NULL;
 	}
 }

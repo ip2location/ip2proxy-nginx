@@ -75,13 +75,6 @@ Description : Load IP2Proxy Nginx module if it was compiled as dynamic.
 ```
 
 ```
-Syntax      : ip2proxy_access_type file_io|shared_memory|cache_memory
-Default     : cache_memory
-Context     : http
-Description : Set the method used for lookup.
-```
-
-```
 Syntax      : ip2proxy_database path
 Default     : none
 Context     : http
@@ -110,7 +103,6 @@ Description : Set a list of proxies to translate x-forwarded-for headers for.
 http {
 	...
 	
-	ip2proxy_access_type		cache_memory;
 	ip2proxy_database			/usr/share/ip2location/PX3.BIN;
 	ip2proxy_proxy_recursive	on;
 	ip2proxy_proxy				192.168.1.0/24;
