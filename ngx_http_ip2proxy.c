@@ -1,6 +1,6 @@
 /*
  * IP2Proxy Nginx module is distributed under MIT license
- * Copyright (c) 2013-2020 IP2Location.com. support at ip2location dot com
+ * Copyright (c) 2013-2021 IP2Location.com. support at ip2location dot com
  *
  * This module is free software; you can redistribute it and/or
  * modify it under the terms of the MIT license
@@ -166,6 +166,12 @@ ngx_http_ip2proxy_vars[] = {
 		ngx_string("ip2proxy_threat"), NULL,
 		ngx_http_ip2proxy_get_str_value,
 		offsetof(IP2ProxyRecord, threat),
+		0, 0
+	},
+	{
+		ngx_string("ip2proxy_provider"), NULL,
+		ngx_http_ip2proxy_get_str_value,
+		offsetof(IP2ProxyRecord, provider),
 		0, 0
 	},
 
