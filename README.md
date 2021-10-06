@@ -164,7 +164,7 @@ server {
 
 		fastcgi_param IP2PROXY_COUNTRY_SHORT	$ip2proxy_country_short;
 		fastcgi_param IP2PROXY_COUNTRY_LONG	$ip2proxy_country_long;
-		fastcgi_param IP2PROXY_REGION		$ip2proxyn_region;
+		fastcgi_param IP2PROXY_REGION		$ip2proxy_region;
 		fastcgi_param IP2PROXY_CITY		$ip2proxy_city;
 		fastcgi_param IP2PROXY_ISP		$ip2proxy_isp;
 		fastcgi_param IP2PROXY_IS_PROXY		$ip2proxy_is_proxy;
