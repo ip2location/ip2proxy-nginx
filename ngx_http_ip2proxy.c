@@ -236,16 +236,27 @@ ngx_http_ip2proxy_get_records(ngx_http_request_t *r)
 
 	if (gcf->handler) {
 		ngx_addr_t	addr;
-		ngx_array_t	*xfwd;
+		
+	#if defined(nginx_version) && nginx_version >= 1023000
+		ngx_table_elt_t         *xfwd;
+	#else
+	        ngx_array_t             *xfwd;
+	#endif
 		u_char		p[NGX_INET6_ADDRSTRLEN + 1];
 		size_t		size;
 
 		addr.sockaddr = r->connection->sockaddr;
 		addr.socklen = r->connection->socklen;
 
-		xfwd = &r->headers_in.x_forwarded_for;
+	#if defined(nginx_version) && nginx_version >= 1023000
+    		xfwd = r->headers_in.x_forwarded_for;
 
-		if (xfwd->nelts > 0 && gcf->proxies != NULL) {
+    		if (xfwd != NULL && gcf->proxies != NULL) {
+	#else
+    		xfwd = &r->headers_in.x_forwarded_for;
+
+    		if (xfwd->nelts > 0 && gcf->proxies != NULL) {
+	#endif		
 			(void) ngx_http_get_forwarded_addr(r, &addr, xfwd, NULL, gcf->proxies, gcf->proxy_recursive);
 		}
 
