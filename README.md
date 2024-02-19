@@ -4,7 +4,7 @@
 
 ### Description
 
-The Nginx IP2Proxy module enables user to detect visitor IP addresses which are used as VPN anonymizer, open proxies, web proxies and Tor exits.
+The Nginx IP2Proxy module enables user to detect visitor IP addresses which are used as VPN servers, open proxies, web proxies, Tor exit nodes, search engine robots, data center ranges, residential proxies, consumer privacy networks, and enterprise private networks.
 
 The IP2Proxy database can be downloaded from [https://lite.ip2location.com](https://lite.ip2location.com/ip2proxy-lite) (Free) or [https://www.ip2location.com](https://www.ip2location.com/database/ip2proxy) (Commercial).
 
