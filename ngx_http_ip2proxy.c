@@ -175,7 +175,12 @@ ngx_http_ip2proxy_vars[] = {
 		offsetof(IP2ProxyRecord, provider),
 		0, 0
 	},
-
+	{
+		ngx_string("ip2proxy_fraud_score"), NULL,
+		ngx_http_ip2proxy_get_str_value,
+		offsetof(IP2ProxyRecord, fraud_score),
+		0, 0
+	},
 	ngx_http_null_variable
 };
 
@@ -193,14 +198,14 @@ ngx_http_ip2proxy_get_str_value(ngx_http_request_t *r, ngx_http_variable_value_t
 	}
 
 	val = *(char **) ((char *) record + data);
-	
+
 	if (val == NULL) {
 		goto no_value;
 	}
 
 	len = ngx_strlen(val);
 	v->data = ngx_pnalloc(r->pool, len);
-	
+
 	if (v->data == NULL) {
 		IP2Proxy_free_record(record);
 		return NGX_ERROR;
@@ -237,7 +242,7 @@ ngx_http_ip2proxy_get_records(ngx_http_request_t *r)
 
 	if (gcf->handler) {
 		ngx_addr_t	addr;
-		
+
 	#if defined(nginx_version) && nginx_version >= 1023000
 		ngx_table_elt_t         *xfwd;
 	#else
@@ -257,7 +262,7 @@ ngx_http_ip2proxy_get_records(ngx_http_request_t *r)
     		xfwd = &r->headers_in.x_forwarded_for;
 
     		if (xfwd->nelts > 0 && gcf->proxies != NULL) {
-	#endif		
+	#endif
 			(void) ngx_http_get_forwarded_addr(r, &addr, xfwd, NULL, gcf->proxies, gcf->proxy_recursive);
 		}
 
@@ -273,7 +278,7 @@ ngx_http_ip2proxy_get_records(ngx_http_request_t *r)
 
 		return IP2Proxy_get_all(gcf->handler, (char *)p);
 	}
-	
+
 	return NULL;
 }
 
@@ -285,7 +290,7 @@ ngx_http_ip2proxy_add_variables(ngx_conf_t *cf)
 
 	for (v = ngx_http_ip2proxy_vars; v->name.len; v++) {
 		var = ngx_http_add_variable(cf, &v->name, v->flags);
-		
+
 		if (var == NULL) {
 			return NGX_ERROR;
 		}
@@ -305,7 +310,7 @@ ngx_http_ip2proxy_create_conf(ngx_conf_t *cf)
 	ngx_http_ip2proxy_conf_t	*conf;
 
 	conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_ip2proxy_conf_t));
-	
+
 	if (conf == NULL) {
 		return NULL;
 	}
@@ -313,7 +318,7 @@ ngx_http_ip2proxy_create_conf(ngx_conf_t *cf)
 	conf->proxy_recursive = NGX_CONF_UNSET;
 
 	cln = ngx_pool_cleanup_add(cf->pool, 0);
-	
+
 	if (cln == NULL) {
 		return NULL;
 	}

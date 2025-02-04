@@ -24,7 +24,7 @@ The IP2Proxy database can be downloaded from [https://lite.ip2location.com](http
    rm master.zip
    ```
 
-   
+
 
 4. Download the latest Nginx source code from https://nginx.org/en/download.html
 
@@ -32,7 +32,7 @@ The IP2Proxy database can be downloaded from [https://lite.ip2location.com](http
    wget https://nginx.org/download/nginx-x.y.z.tar.gz
    ```
 
-   
+
 
 5. Decompress and go into Nginx source directory.
 
@@ -41,7 +41,7 @@ The IP2Proxy database can be downloaded from [https://lite.ip2location.com](http
    cd nginx-x.y.z
    ```
 
-   
+
 
 6. Re-compile Nginx from source to include this module.
 
@@ -102,7 +102,7 @@ Description : Set a list of proxies to translate x-forwarded-for headers for.
 ```nginx
 http {
 	...
-	
+
 	ip2proxy_database			/usr/share/ip2location/PX3.BIN;
 	ip2proxy_proxy_recursive	on;
 	ip2proxy_proxy				192.168.1.0/24;
@@ -130,6 +130,7 @@ $ip2proxy_proxy_as;
 $ip2proxy_last_seen;
 $ip2proxy_threat;
 $ip2proxy_provider;
+$ip2proxy_fraud_score;
 ```
 
 
@@ -157,7 +158,7 @@ server {
 		fastcgi_pass php-fpm-sock;
 		fastcgi_index index.php;
 		include fastcgi.conf;
-        
+
 		# Add custom header to view result in HTTP response
 		add_header X-Country-Code $ip2proxy_country_short;
 		add_header X-Country-Name $ip2proxy_country_long;
@@ -176,6 +177,7 @@ server {
 		fastcgi_param IP2PROXY_LAST_SEEN	$ip2proxy_last_seen;
 		fastcgi_param IP2PROXY_THREAT		$ip2proxy_threat;
 		fastcgi_param IP2PROXY_PROVIDER		$ip2proxy_provider;
+		fastcgi_param IP2PROXY_FRAUD_SCORE	$ip2proxy_fraud_score;
 	}
 }
 ```
