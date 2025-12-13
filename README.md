@@ -125,8 +125,8 @@ $ip2proxy_is_proxy;
 $ip2proxy_proxy_type;
 $ip2proxy_domain;
 $ip2proxy_usage_type;
-$ip2proxy_proxy_asn;
-$ip2proxy_proxy_as;
+$ip2proxy_asn;
+$ip2proxy_as;
 $ip2proxy_last_seen;
 $ip2proxy_threat;
 $ip2proxy_provider;
@@ -164,20 +164,20 @@ server {
 		add_header X-Country-Name $ip2proxy_country_long;
 
 		fastcgi_param IP2PROXY_COUNTRY_SHORT	$ip2proxy_country_short;
-		fastcgi_param IP2PROXY_COUNTRY_LONG	$ip2proxy_country_long;
-		fastcgi_param IP2PROXY_REGION		$ip2proxy_region;
-		fastcgi_param IP2PROXY_CITY		$ip2proxy_city;
-		fastcgi_param IP2PROXY_ISP		$ip2proxy_isp;
-		fastcgi_param IP2PROXY_IS_PROXY		$ip2proxy_is_proxy;
-		fastcgi_param IP2PROXY_PROXY_TYPE	$ip2proxy_proxy_type;
-		fastcgi_param IP2PROXY_DOMAIN		$ip2proxy_domain;
-		fastcgi_param IP2PROXY_USAGE_TYPE	$ip2proxy_usage_type;
-		fastcgi_param IP2PROXY_PROXY_ASN	$ip2proxy_proxy_asn;
-		fastcgi_param IP2PROXY_PROXY_AS		$ip2proxy_proxy_as;
-		fastcgi_param IP2PROXY_LAST_SEEN	$ip2proxy_last_seen;
-		fastcgi_param IP2PROXY_THREAT		$ip2proxy_threat;
-		fastcgi_param IP2PROXY_PROVIDER		$ip2proxy_provider;
-		fastcgi_param IP2PROXY_FRAUD_SCORE	$ip2proxy_fraud_score;
+		fastcgi_param IP2PROXY_COUNTRY_LONG	    $ip2proxy_country_long;
+		fastcgi_param IP2PROXY_REGION		    $ip2proxy_region;
+		fastcgi_param IP2PROXY_CITY		        $ip2proxy_city;
+		fastcgi_param IP2PROXY_ISP		        $ip2proxy_isp;
+		fastcgi_param IP2PROXY_IS_PROXY		    $ip2proxy_is_proxy;
+		fastcgi_param IP2PROXY_PROXY_TYPE	    $ip2proxy_proxy_type;
+		fastcgi_param IP2PROXY_DOMAIN		    $ip2proxy_domain;
+		fastcgi_param IP2PROXY_USAGE_TYPE	    $ip2proxy_usage_type;
+		fastcgi_param IP2PROXY_ASN      	    $ip2proxy_asn;
+		fastcgi_param IP2PROXY_AS		        $ip2proxy_as;
+		fastcgi_param IP2PROXY_LAST_SEEN	    $ip2proxy_last_seen;
+		fastcgi_param IP2PROXY_THREAT		    $ip2proxy_threat;
+		fastcgi_param IP2PROXY_PROVIDER		    $ip2proxy_provider;
+		fastcgi_param IP2PROXY_FRAUD_SCORE	    $ip2proxy_fraud_score;
 	}
 }
 ```
